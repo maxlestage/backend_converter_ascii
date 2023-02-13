@@ -1,0 +1,15 @@
+version: "3"
+services:
+  db:
+    container_name: codo_maton-db
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=codo_maton
+    volumes:
+      - codo_maton-db-data:/var/lib/postgresql/data
+      - ./init-database.sh:/docker-entrypoint-initdb.d/init-database.sh
+    ports:
+      - "5432:5432"
+volumes:
+  codo_maton-db-data:
