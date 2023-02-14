@@ -1,28 +1,37 @@
 use chrono::NaiveDate;
 use sea_orm::entity::prelude::*;
+use sea_orm::Column;
 
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel)]
 #[sea_orm(table_name = "user")]
 pub struct User {
     #[sea_orm(primary_key)]
     pub id: i32,
-    pub Firstname: String,
-    pub Lastname: String,
-    pub SignUpDate: NaiveDate,
-    pub Mail: String,
-    pub Password: String,
+    pub firstname: String,
+    pub lastname: String,
+    pub signup_date: NaiveDate,
+    pub mail: String,
+    pub password: String,
 }
 
-// #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-// pub enum Relation {
-//     #[sea_orm(has_many = "super::fruit::Entity")]
-//     Fruit,
-// }
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+pub enum Relation {
+    #[sea_orm(has_many = "super::video::Entity")]
+    Videos,
+    #[sea_orm(has_many = "super::comment::Entity")]
+    Comments,
+}
 
-// impl Related<super::fruit::Entity> for Entity {
-//     fn to() -> RelationDef {
-//         Relation::Fruit.def()
-//     }
-// }
+impl Related<super::video::Entity> for User {
+    fn to() -> RelationDef {
+        Relation::Videos.def()
+    }
+}
 
-impl ActiveModelBehavior for User {}
+impl Related<super::comment::Entity> for User {
+    fn to() -> RelationDef {
+        Relation::Comments.def()
+    }
+}
+
+impl ActiveModelBehavior for ActiveModel {}
