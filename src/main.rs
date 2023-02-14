@@ -51,7 +51,7 @@ async fn watch() -> impl Responder {
 // }
 
 const DATABASE_URL: &str = "postgres://postgres:codo_maton@localhost:5432";
-const DB_NAME: &str = "codo_maton";
+const DB_NAME: &str = "codo_maton_db";
 
 async fn run() -> Result<(), DbErr> {
     let db = Database::connect(DATABASE_URL).await?;
@@ -68,27 +68,35 @@ async fn run() -> Result<(), DbErr> {
     .await?;
 
     let url = format!("{}/{}", DATABASE_URL, DB_NAME);
+
     Database::connect(&url).await?;
 
     Ok(())
 }
-
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    if let Err(err) = block_on(run()) {
-        panic!("{}", err);
-    }
+    let db_url = format!("{}/{}", DATABASE_URL, DB_NAME);
+    let db_result = tokio::spawn(async move { run().await });
 
-    HttpServer::new(|| {
-        App::new()
-            .service(home)
-            .service(user_id)
-            .service(user_id)
-            .service(my_videos)
-            .service(watch)
-        // .route("/hey", web::get().to(manual_hello))
-    })
-    .bind(("127.0.0.1", 8080))?
-    .run()
-    .await
+    match db_result.await {
+        Ok(Ok(())) => {
+            println!("Connecté à la base de données : {}", DB_NAME);
+            println!("linked to :{}", db_url);
+            HttpServer::new(|| {
+                App::new()
+                    .service(home)
+                    .service(user_id)
+                    .service(my_videos)
+                    .service(watch)
+            })
+            .bind(("127.0.0.1", 8080))?
+            .run()
+            .await
+        }
+        Ok(Err(err)) => panic!("Erreur lors de la connexion à la base de données : {}", err),
+        Err(err) => panic!(
+            "Erreur inattendue lors de la connexion à la base de données : {}",
+            err
+        ),
+    }
 }
