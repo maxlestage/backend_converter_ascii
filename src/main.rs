@@ -1,9 +1,11 @@
 use actix_web::{get, guard, post, web, App, HttpResponse, HttpServer, Responder};
 
 use futures::executor::block_on;
-use sea_orm::{ConnectionTrait, Database, DatabaseConnection, DbErr, Statement};
+use sea_orm::{ConnectionTrait, Database, DatabaseConnection, DbErr, Insert, Statement};
 use thiserror::Error;
 
+use queries::entities;
+use queries::insert_test;
 #[derive(Error, Debug)]
 pub enum InternalServerError {
     #[error("Task faild for JoinError: {}", 0)]
@@ -95,9 +97,10 @@ async fn main() -> std::io::Result<()> {
     let db_result = tokio::spawn(async move { run().await });
 
     match db_result.await {
-        Ok(Ok(_db)) => {
+        Ok(Ok(db)) => {
             println!("Connecté à la base de données : {}", DB_NAME);
             println!("linked to :{}", db_url);
+            insert_test(db).await;
             HttpServer::new(|| {
                 App::new()
                     .service(home)

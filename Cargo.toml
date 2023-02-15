@@ -7,20 +7,23 @@ edition = "2021"
 
 [dependencies]
 actix-web = "4"
-tokio ={workspace = true }
+tokio = {workspace = true }
 futures = {workspace = true }
 sea-orm = {workspace = true }
 sea-orm-migration = {workspace = true }
 chrono = {workspace = true }
 thiserror = "^1.0"
 anyhow = "^1.0.69"
+queries= {path ="./queries" }
 
 [workspace]
-members = ["db_queries"]
+members = ["queries"]
+exclude=["migration"]
+
 
 [workspace.dependencies]
 tokio = "^1.25.0"
 futures = "^0.3"
-sea-orm = { version = "^0", features = [ "sqlx-postgres", "runtime-actix-native-tls", "macros" ] }
+sea-orm = { version = "^0", features = [ "sqlx-postgres", "runtime-actix-native-tls", "macros", "with-chrono", "with-json" ] }
 sea-orm-migration = "^0"
 chrono = "^0.4"

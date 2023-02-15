@@ -312,6 +312,7 @@ dependencies = [
  "anyhow",
  "chrono",
  "futures",
+ "queries",
  "sea-orm",
  "sea-orm-migration",
  "thiserror",
@@ -682,17 +683,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "db_queries"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "futures",
- "sea-orm",
- "sea-orm-migration",
- "tokio",
 ]
 
 [[package]]
@@ -1546,6 +1536,17 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "queries"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "futures",
+ "sea-orm",
+ "sea-orm-migration",
+ "tokio",
 ]
 
 [[package]]

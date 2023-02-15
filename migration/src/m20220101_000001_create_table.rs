@@ -20,14 +20,9 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
-                    /*   Firstname,
-                    Lastname,
-                    SignUpDate,
-                    Mail,
-                    Password, */
                     .col(ColumnDef::new(User::Firstname).string().not_null())
                     .col(ColumnDef::new(User::Lastname).string().not_null())
-                    .col(ColumnDef::new(User::SignUpDate).string().not_null())
+                    .col(ColumnDef::new(User::SignUpDate).date().not_null())
                     .col(ColumnDef::new(User::Mail).string().not_null())
                     .col(ColumnDef::new(User::Password).string().not_null())
                     .to_owned(),
