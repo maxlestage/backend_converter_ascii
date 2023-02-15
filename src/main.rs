@@ -36,22 +36,22 @@ async fn home() -> impl Responder {
     HttpResponse::Ok().body("Hello world!")
 }
 
-#[get("/watch/:video_id")]
+#[get("/watch/{video_id}")]
 async fn watch_by_id() -> impl Responder {
     HttpResponse::Ok().body("Hello world!")
 }
 
-#[get("/user/:user_id")]
+#[get("/user/{user_id}")]
 async fn user_id() -> impl Responder {
     HttpResponse::Ok().body("Hello world!")
 }
 
-#[get("/user/:user_id/my_videos")]
+#[get("/user/{user_id}/my_videos")]
 async fn my_videos() -> impl Responder {
     HttpResponse::Ok().body("Hello world!")
 }
 
-#[get("/user/:user_id/my_movies/:movie_id/watch")]
+#[get("/user/{user_id}/my_movies/{movie_id}/watch")]
 async fn watch() -> impl Responder {
     HttpResponse::Ok().body("Hello world!")
 }
