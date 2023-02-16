@@ -1,10 +1,10 @@
 use actix_web::{get, guard, post, web, App, HttpResponse, HttpServer, Responder};
-
-use futures::executor::block_on;
-use sea_orm::{ConnectionTrait, Database, DatabaseConnection, DbErr, Insert, Statement};
+// use futures::executor::block_on;::
+// use sea_orm::{ConnectionTrait, Database, DatabaseConnection, DbErr, Insert, Statement};
+use sea_orm::{Database, DatabaseConnection, DbErr};
 use thiserror::Error;
 
-use queries::insert_test;
+use queries::{delete_test, insert_test};
 #[derive(Error, Debug)]
 pub enum InternalServerError {
     #[error("Task faild for JoinError: {}", 0)]
@@ -32,6 +32,57 @@ async fn logout(req_body: String) -> impl Responder {
 
 #[get("/")]
 async fn home() -> impl Responder {
+    HttpResponse::Ok().body("Hello world!")
+}
+
+#[get("/test")]
+async fn test() -> impl Responder {
+    let db_result = tokio::spawn(async move { run().await });
+
+    match db_result.await {
+        Ok(Ok(db)) => {
+            insert_test(db).await;
+        }
+        Ok(Err(err)) => panic!("Erreur lors de la connexion à la base de données : {}", err),
+        Err(err) => panic!(
+            "Erreur inattendue lors de la connexion à la base de données : {}",
+            err
+        ),
+    }
+    HttpResponse::Ok().body("Hello world!")
+}
+
+#[get("/insert")]
+async fn insert() -> impl Responder {
+    let db_result = tokio::spawn(async move { run().await });
+
+    match db_result.await {
+        Ok(Ok(db)) => {
+            insert_test(db).await;
+        }
+        Ok(Err(err)) => panic!("Erreur lors de la connexion à la base de données : {}", err),
+        Err(err) => panic!(
+            "Erreur inattendue lors de la connexion à la base de données : {}",
+            err
+        ),
+    }
+    HttpResponse::Ok().body("Hello world!")
+}
+
+#[get("/delete/{id}")]
+async fn delete(id: web::Path<(i32,)>) -> impl Responder {
+    let db_result = tokio::spawn(async move { run().await });
+
+    match db_result.await {
+        Ok(Ok(db)) => {
+            delete_test(db, id.0).await;
+        }
+        Ok(Err(err)) => panic!("Erreur lors de la connexion à la base de données : {}", err),
+        Err(err) => panic!(
+            "Erreur inattendue lors de la connexion à la base de données : {}",
+            err
+        ),
+    }
     HttpResponse::Ok().body("Hello world!")
 }
 
@@ -85,27 +136,30 @@ async fn run() -> Result<DatabaseConnection> {
     // ))
     // .await?;
 
-    let url = format!("{}/{}", DATABASE_URL, DB_NAME);
-
+    let url: String = format!("{}/{}", DATABASE_URL, DB_NAME);
     let db = Database::connect(&url).await?;
     Ok(db)
 }
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let db_url = format!("{}/{}", DATABASE_URL, DB_NAME);
     let db_result = tokio::spawn(async move { run().await });
 
     match db_result.await {
-        Ok(Ok(db)) => {
+        Ok(Ok(_db)) => {
             println!("Connecté à la base de données : {}", DB_NAME);
             println!("linked to :{}", db_url);
-            insert_test(db).await;
+            // insert_test(db).await;
             HttpServer::new(|| {
                 App::new()
                     .service(home)
                     .service(user_id)
                     .service(my_videos)
                     .service(watch)
+                    .service(test)
+                    .service(insert)
+                    .service(delete)
                     .default_service(
                         web::route()
                             .guard(guard::Not(guard::Get()))

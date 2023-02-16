@@ -2,6 +2,7 @@
 use super::prelude::*;
 use chrono::NaiveDate;
 use sea_orm::entity::prelude::*;
+
 // use sea_orm::Column;
 
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel)]
