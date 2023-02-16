@@ -1555,6 +1555,7 @@ name = "queries"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "entities",
  "futures",
  "sea-orm",
  "sea-orm-migration",

@@ -4,7 +4,6 @@ use futures::executor::block_on;
 use sea_orm::{ConnectionTrait, Database, DatabaseConnection, DbErr, Insert, Statement};
 use thiserror::Error;
 
-use queries::entities;
 use queries::insert_test;
 #[derive(Error, Debug)]
 pub enum InternalServerError {
@@ -113,7 +112,7 @@ async fn main() -> std::io::Result<()> {
                             .to(HttpResponse::NotFound),
                     )
             })
-            .bind(("127.0.0.1", 8080))?
+            .bind(("0.0.0.0", 8080))?
             .run()
             .await
         }

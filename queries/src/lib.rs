@@ -1,7 +1,7 @@
 use chrono::prelude::*;
 use sea_orm::ActiveModelTrait;
 use sea_orm::DatabaseConnection;
-pub mod entities;
+
 use entities::*;
 use sea_orm::Set;
 

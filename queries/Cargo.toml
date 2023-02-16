@@ -15,4 +15,4 @@ futures = {workspace = true }
 sea-orm = {workspace = true }
 sea-orm-migration = {workspace = true }
 chrono = {workspace = true }
-
+entities =  {path   = "../entities"}
