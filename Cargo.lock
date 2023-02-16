@@ -311,6 +311,7 @@ dependencies = [
  "actix-web",
  "anyhow",
  "chrono",
+ "entities",
  "futures",
  "queries",
  "sea-orm",
@@ -748,6 +749,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "071a31f4ee85403370b58aca746f01041ede6f0da2730960ad001edc2b71b394"
 dependencies = [
  "cfg-if",
+]
+
+[[package]]
+name = "entities"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "futures",
+ "sea-orm",
+ "sea-orm-migration",
+ "tokio",
 ]
 
 [[package]]

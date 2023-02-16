@@ -14,10 +14,11 @@ sea-orm-migration = {workspace = true }
 chrono = {workspace = true }
 thiserror = "^1.0"
 anyhow = "^1.0.69"
-queries= {path ="./queries" }
+queries = {path = "./queries" }
+entities = {path = "./entities" } 
 
 [workspace]
-members = ["queries"]
+members = ["queries", "entities"]
 exclude=["migration"]
 
 
