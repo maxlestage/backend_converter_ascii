@@ -23,8 +23,16 @@ pub async fn insert_test(db: DatabaseConnection) {
 }
 
 pub async fn delete_test(db: DatabaseConnection, id: i32) {
-    let _res: DeleteResult = User::delete_by_id(id)
+    let deleted: DeleteResult = User::delete_by_id(id)
         .exec(&db)
         .await
         .expect("Deletion loupé");
+    dbg!(deleted);
+}
+
+pub async fn select_test(db: DatabaseConnection, id: i32) {
+    // Find by primary key
+    let select_user: Option<user::Model> =
+        User::find_by_id(id).one(&db).await.expect("Select loupé");
+    dbg!(select_user);
 }

@@ -4,7 +4,7 @@ use actix_web::{get, guard, post, web, App, HttpResponse, HttpServer, Responder}
 use sea_orm::{Database, DatabaseConnection, DbErr};
 use thiserror::Error;
 
-use queries::{delete_test, insert_test};
+use queries::{delete_test, insert_test, select_test};
 #[derive(Error, Debug)]
 pub enum InternalServerError {
     #[error("Task faild for JoinError: {}", 0)]
@@ -75,7 +75,24 @@ async fn delete(id: web::Path<(i32,)>) -> impl Responder {
 
     match db_result.await {
         Ok(Ok(db)) => {
-            delete_test(db, id.0).await;
+            delete_test(db, id.into_inner().0).await;
+        }
+        Ok(Err(err)) => panic!("Erreur lors de la connexion à la base de données : {}", err),
+        Err(err) => panic!(
+            "Erreur inattendue lors de la connexion à la base de données : {}",
+            err
+        ),
+    }
+    HttpResponse::Ok().body("Hello world!")
+}
+
+#[get("/select/{id}")]
+async fn select(id: web::Path<(i32,)>) -> impl Responder {
+    let db_result = tokio::spawn(async move { run().await });
+
+    match db_result.await {
+        Ok(Ok(db)) => {
+            select_test(db, id.into_inner().0).await;
         }
         Ok(Err(err)) => panic!("Erreur lors de la connexion à la base de données : {}", err),
         Err(err) => panic!(
@@ -160,6 +177,7 @@ async fn main() -> std::io::Result<()> {
                     .service(test)
                     .service(insert)
                     .service(delete)
+                    .service(select)
                     .default_service(
                         web::route()
                             .guard(guard::Not(guard::Get()))
