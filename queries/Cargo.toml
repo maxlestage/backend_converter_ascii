@@ -16,3 +16,5 @@ sea-orm = {workspace = true }
 sea-orm-migration = {workspace = true }
 chrono = {workspace = true }
 entities =  {path   = "../entities"}
+serde = {workspace = true }
+serde_json = {workspace = true }

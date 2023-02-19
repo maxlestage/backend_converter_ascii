@@ -1,10 +1,14 @@
+use actix_web::delete;
 use actix_web::{get, guard, post, web, App, HttpResponse, HttpServer, Responder};
+use entities::user;
 // use futures::executor::block_on;::
 // use sea_orm::{ConnectionTrait, Database, DatabaseConnection, DbErr, Insert, Statement};
+use entities::prelude::*;
+use queries::*;
+use sea_orm::ActiveModelTrait;
+use sea_orm::JsonValue;
 use sea_orm::{Database, DatabaseConnection, DbErr};
 use thiserror::Error;
-
-use queries::*;
 
 #[derive(Error, Debug)]
 pub enum InternalServerError {
@@ -36,13 +40,35 @@ async fn home() -> impl Responder {
     HttpResponse::Ok().body("Hello world!")
 }
 
-#[get("/test")]
-async fn test() -> impl Responder {
+// #[get("/test")]
+// async fn test() -> impl Responder {
+//     let db_result = tokio::spawn(async move { run().await });
+
+//     match db_result.await {
+//         Ok(Ok(db)) => {
+//             insert_test(db).await;
+//         }
+//         Ok(Err(err)) => panic!("Erreur lors de la connexion à la base de données : {}", err),
+//         Err(err) => panic!(
+//             "Erreur inattendue lors de la connexion à la base de données : {}",
+//             err
+//         ),
+//     }
+//     HttpResponse::Ok().body("Hello world!")
+// }
+
+#[post("/insert")]
+async fn insert(user_input: web::Json<JsonValue>) -> impl Responder {
     let db_result = tokio::spawn(async move { run().await });
+
+    let user: user::Model;
+    let Ok(user_active_model) = user::ActiveModel::from_json(user_input.into_inner()) else {
+  return HttpResponse::NotAcceptable().finish();
+};
 
     match db_result.await {
         Ok(Ok(db)) => {
-            insert_test(db).await;
+            user = insert_test(db, user_active_model).await;
         }
         Ok(Err(err)) => panic!("Erreur lors de la connexion à la base de données : {}", err),
         Err(err) => panic!(
@@ -50,16 +76,21 @@ async fn test() -> impl Responder {
             err
         ),
     }
-    HttpResponse::Ok().body("Hello world!")
+
+    HttpResponse::Created().json(user)
 }
 
-#[get("/insert")]
-async fn insert() -> impl Responder {
+#[delete("/delete")]
+async fn delete(id: web::Json<JsonValue>) -> impl Responder {
     let db_result = tokio::spawn(async move { run().await });
+
+    let Some(id) = id["id"].as_i64()  else {
+  return HttpResponse::NotAcceptable().finish();
+};
 
     match db_result.await {
         Ok(Ok(db)) => {
-            insert_test(db).await;
+            delete_test(db, id as i32).await;
         }
         Ok(Err(err)) => panic!("Erreur lors de la connexion à la base de données : {}", err),
         Err(err) => panic!(
@@ -67,24 +98,7 @@ async fn insert() -> impl Responder {
             err
         ),
     }
-    HttpResponse::Ok().body("Hello world!")
-}
-
-#[get("/delete/{id}")]
-async fn delete(id: web::Path<(i32,)>) -> impl Responder {
-    let db_result = tokio::spawn(async move { run().await });
-
-    match db_result.await {
-        Ok(Ok(db)) => {
-            delete_test(db, id.into_inner().0).await;
-        }
-        Ok(Err(err)) => panic!("Erreur lors de la connexion à la base de données : {}", err),
-        Err(err) => panic!(
-            "Erreur inattendue lors de la connexion à la base de données : {}",
-            err
-        ),
-    }
-    HttpResponse::Ok().body("Hello world!")
+    HttpResponse::Ok().finish()
 }
 
 #[get("/select/{id}")]
@@ -175,7 +189,7 @@ async fn main() -> std::io::Result<()> {
                     .service(user_id)
                     .service(my_videos)
                     .service(watch)
-                    .service(test)
+                    // .service(test)//
                     .service(insert)
                     .service(delete)
                     .service(select)

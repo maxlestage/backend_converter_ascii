@@ -1,25 +1,23 @@
 use chrono::prelude::*;
 use entities::prelude::*;
 use entities::*;
+// use futures::future::ok;
+use entities::user::ActiveModel;
 use sea_orm::ActiveModelTrait;
 use sea_orm::DatabaseConnection;
 use sea_orm::DeleteResult;
 use sea_orm::EntityTrait;
 use sea_orm::Set;
+use serde::{Deserialize, Serialize};
+use serde_json::{json, Error, Value};
 
-// const DATE: NaiveDate = NaiveDate::from(Local::now()).unwrap();
-pub async fn insert_test(db: DatabaseConnection) {
-    let user = user::ActiveModel {
-        firstname: Set("John".to_owned()),
-        lastname: Set("Doe".to_owned()),
-        sign_up_date: Set(Local::now().date_naive().to_owned()),
-        mail: Set("johndoe@mail.com".to_owned()),
-        password: Set("azerty".to_owned()),
-        ..Default::default() // all other attributes are `NotSet`
-    };
+pub async fn insert_test(db: DatabaseConnection, user_input: user::ActiveModel) -> user::Model {
+    // Find by primary key
+    let select_user: Option<user::Model> = User::find().one(&db).await.expect(" pas gérer");
+    dbg!(select_user);
 
-    let user: user::Model = user.insert(&db).await.expect("Insertion loupé");
-    dbg!(user);
+    let user: user::Model = user_input.insert(&db).await.expect("Insertion loupé");
+    dbg!(user)
 }
 
 pub async fn delete_test(db: DatabaseConnection, id: i32) {

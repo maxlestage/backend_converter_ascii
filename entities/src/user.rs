@@ -2,13 +2,14 @@
 use super::prelude::*;
 use chrono::NaiveDate;
 use sea_orm::entity::prelude::*;
-
+use serde::{Deserialize, Serialize};
 // use sea_orm::Column;
 
-#[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel)]
+#[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize)]
 #[sea_orm(table_name = "user")]
 pub struct Model {
     #[sea_orm(primary_key)]
+    #[serde(skip_deserializing)]
     pub id: i32,
     pub firstname: String,
     pub lastname: String,
