@@ -25,11 +25,6 @@ async fn sign_in(req_body: String) -> impl Responder {
     HttpResponse::Ok().body(req_body)
 }
 
-#[post("/sign_up")]
-async fn sign_up(req_body: String) -> impl Responder {
-    HttpResponse::Ok().body(req_body)
-}
-
 #[post("/logout")]
 async fn logout(req_body: String) -> impl Responder {
     HttpResponse::Ok().body(req_body)
@@ -57,8 +52,8 @@ async fn home() -> impl Responder {
 //     HttpResponse::Ok().body("Hello world!")
 // }
 
-#[post("/insert")]
-async fn insert(user_input: web::Json<JsonValue>) -> impl Responder {
+#[post("/sign_up")]
+async fn sign_up(user_input: web::Json<JsonValue>) -> impl Responder {
     let db_result = tokio::spawn(async move { run().await });
 
     let user: user::Model;
@@ -194,7 +189,6 @@ async fn main() -> std::io::Result<()> {
                     .service(my_videos)
                     .service(watch)
                     // .service(test)//
-                    .service(insert)
                     .service(delete)
                     .service(select)
                     .default_service(
