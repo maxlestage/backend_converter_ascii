@@ -68,7 +68,11 @@ async fn insert(user_input: web::Json<JsonValue>) -> impl Responder {
 
     match db_result.await {
         Ok(Ok(db)) => {
-            user = insert_test(db, user_active_model).await;
+            if let Some(user_check) = insert_test(db, user_active_model).await {
+                user = user_check;
+            } else {
+                return HttpResponse::Conflict().finish();
+            }
         }
         Ok(Err(err)) => panic!("Erreur lors de la connexion à la base de données : {}", err),
         Err(err) => panic!(
