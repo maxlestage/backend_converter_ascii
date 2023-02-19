@@ -17,8 +17,6 @@ pub async fn insert_test(
     db: DatabaseConnection,
     user_input: user::ActiveModel,
 ) -> Option<user::Model> {
-    // Find by primary key
-
     let user_mail = user_input.mail.as_ref().clone();
 
     if User::find()
@@ -44,7 +42,6 @@ pub async fn delete_test(db: DatabaseConnection, id: i32) {
 }
 
 pub async fn select_test(db: DatabaseConnection, id: i32) {
-    // Find by primary key
     let select_user: Option<user::Model> =
         User::find_by_id(id).one(&db).await.expect("Select loupé");
     dbg!(select_user);
