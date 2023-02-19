@@ -5,6 +5,7 @@ use sea_orm::{Database, DatabaseConnection, DbErr};
 use thiserror::Error;
 
 use queries::*;
+
 #[derive(Error, Debug)]
 pub enum InternalServerError {
     #[error("Task faild for JoinError: {}", 0)]
