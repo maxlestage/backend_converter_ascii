@@ -52,7 +52,7 @@ async fn home() -> impl Responder {
 //     HttpResponse::Ok().body("Hello world!")
 // }
 
-#[post("/sign_up")]
+#[post("/signup")]
 async fn sign_up(user_input: web::Json<JsonValue>) -> impl Responder {
     let db_result = tokio::spawn(async move { run().await });
 
@@ -191,6 +191,7 @@ async fn main() -> std::io::Result<()> {
                     // .service(test)//
                     .service(delete)
                     .service(select)
+                    .service(sign_up)
                     .default_service(
                         web::route()
                             .guard(guard::Not(guard::Get()))
