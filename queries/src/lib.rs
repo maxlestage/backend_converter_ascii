@@ -1,39 +1,56 @@
-use chrono::prelude::*;
+// use chrono::prelude::*;/
+use chrono::Local;
 use entities::prelude::*;
 use entities::*;
 // use futures::future::ok;
-use entities::user::ActiveModel;
+// use entities::user::ActiveModel;
+// use chrono::NaiveDate;
 use sea_orm::ActiveModelTrait;
 use sea_orm::ColumnTrait;
 use sea_orm::DatabaseConnection;
 use sea_orm::DeleteResult;
 use sea_orm::EntityTrait;
 use sea_orm::QueryFilter;
-use sea_orm::Set;
-use serde::{Deserialize, Serialize};
-use serde_json::{json, Error, Value};
+// use sea_orm::Set;
+// use serde::{Deserialize, Serialize};
+// use serde_json::{json, Error, Value};
 
-pub async fn insert_test(
+use bcrypt::{hash, /* verify */ DEFAULT_COST};
+
+pub async fn create_user(
     db: DatabaseConnection,
     user_input: user::ActiveModel,
 ) -> Option<user::Model> {
-    let user_mail = user_input.mail.as_ref().clone();
+    let mut user_inputed = user_input;
 
+    let user_password = user_inputed.password.as_ref().clone();
+    // println!("{}", user_password);
+    let hashed = hash(&user_password, DEFAULT_COST).unwrap();
+    // println!("{}", hashed);
+    // let valid = verify(&user_password, &hashed).unwrap();
+    // println!("{}", valid);
+
+    user_inputed.sign_up_date =
+        sea_orm::ActiveValue::Set(Some(Local::now().to_owned().date_naive()));
+
+    user_inputed.password = sea_orm::ActiveValue::Set(hashed);
+
+    let user_mail = user_inputed.mail.as_ref().clone();
     if User::find()
         .filter(user::Column::Mail.eq(user_mail))
         .one(&db)
         .await
-        .expect("pas gérer")
+        .expect("pas gérée")
         .is_some()
     {
         return None;
     }
 
-    let user: user::Model = user_input.insert(&db).await.expect("Insertion loupé");
+    let user: user::Model = user_inputed.insert(&db).await.expect("Insertion loupé");
     Some(user)
 }
 
-pub async fn delete_test(db: DatabaseConnection, id: i32) {
+pub async fn delete_user_by_id(db: DatabaseConnection, id: i32) {
     let deleted: DeleteResult = User::delete_by_id(id)
         .exec(&db)
         .await
@@ -41,7 +58,7 @@ pub async fn delete_test(db: DatabaseConnection, id: i32) {
     dbg!(deleted);
 }
 
-pub async fn select_test(db: DatabaseConnection, id: i32) {
+pub async fn select_user_by_id(db: DatabaseConnection, id: i32) {
     let select_user: Option<user::Model> =
         User::find_by_id(id).one(&db).await.expect("Select loupé");
     dbg!(select_user);

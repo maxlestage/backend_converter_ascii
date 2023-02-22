@@ -13,7 +13,7 @@ pub struct Model {
     pub id: i32,
     pub firstname: String,
     pub lastname: String,
-    pub sign_up_date: NaiveDate,
+    pub sign_up_date: Option<NaiveDate>,
     pub mail: String,
     pub password: String,
 }

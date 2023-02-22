@@ -789,6 +789,7 @@ dependencies = [
 name = "entities"
 version = "0.1.0"
 dependencies = [
+ "bcrypt",
  "chrono",
  "futures",
  "sea-orm",
@@ -1599,6 +1600,7 @@ dependencies = [
 name = "queries"
 version = "0.1.0"
 dependencies = [
+ "bcrypt",
  "chrono",
  "entities",
  "futures",

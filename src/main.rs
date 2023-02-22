@@ -3,7 +3,7 @@ use actix_web::{get, guard, post, web, App, HttpResponse, HttpServer, Responder}
 use entities::user;
 // use futures::executor::block_on;::
 // use sea_orm::{ConnectionTrait, Database, DatabaseConnection, DbErr, Insert, Statement};
-use entities::prelude::*;
+// use entities::prelude::*;
 use queries::*;
 use sea_orm::ActiveModelTrait;
 use sea_orm::JsonValue;
@@ -63,7 +63,7 @@ async fn sign_up(user_input: web::Json<JsonValue>) -> impl Responder {
 
     match db_result.await {
         Ok(Ok(db)) => {
-            if let Some(user_check) = insert_test(db, user_active_model).await {
+            if let Some(user_check) = create_user(db, user_active_model).await {
                 user = user_check;
             } else {
                 return HttpResponse::Conflict().finish();
@@ -89,7 +89,7 @@ async fn delete(id: web::Json<JsonValue>) -> impl Responder {
 
     match db_result.await {
         Ok(Ok(db)) => {
-            delete_test(db, id as i32).await;
+            delete_user_by_id(db, id as i32).await;
         }
         Ok(Err(err)) => panic!("Erreur lors de la connexion à la base de données : {}", err),
         Err(err) => panic!(
@@ -106,7 +106,7 @@ async fn select(id: web::Path<(i32,)>) -> impl Responder {
 
     match db_result.await {
         Ok(Ok(db)) => {
-            select_test(db, id.into_inner().0).await;
+            select_user_by_id(db, id.into_inner().0).await;
         }
         Ok(Err(err)) => panic!("Erreur lors de la connexion à la base de données : {}", err),
         Err(err) => panic!(
