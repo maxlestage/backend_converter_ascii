@@ -1,0 +1,14 @@
+{
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "codo_maton",
+      "database": "codo_maton_db",
+      "username": "postgres",
+      "password": "codo_maton"
+    }
+  ]
+}

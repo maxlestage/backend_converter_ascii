@@ -1,0 +1,21 @@
+use chrono::prelude::*;
+use chrono::NaiveDate;
+use sea_orm::DatabaseConnection;
+mod entities;
+use entities::*;
+use sea_orm::Set;
+
+const DATE: NaiveDate = Local::now().date_naive();
+// const DATE: NaiveDate = NaiveDate::from(Local::now()).unwrap();
+pub async fn insert_test(db: DatabaseConnection) {
+    let user = user::ActiveModel {
+        firstname: Set("John".to_owned()),
+        lastname: Set("Doe".to_owned()),
+        signup_date: Set(DATE.format("%d-%m-%Y").to_owned()),
+        mail: Set("johndoe@mail.com".to_owned()),
+        password: Set("azerty".to_owned()),
+        ..Default::default() // all other attributes are `NotSet`
+    };
+
+    let user: user::Model = user.insert(db).await?;
+}
