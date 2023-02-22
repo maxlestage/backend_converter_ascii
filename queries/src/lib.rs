@@ -115,7 +115,7 @@ pub async fn password_is_valid(db: DatabaseConnection, user_input: user::ActiveM
 
     println!("Je test select_user : {:#?}", select_user);
 
-    let user_password = select_user.clone().map(|user| user.password).unwrap();
+    let user_password: String = select_user.clone().map(|user| user.password).unwrap();
     println!("is user_password: {}", user_password);
     let hashed = hash(&user_input.password, DEFAULT_COST).unwrap();
     println!("is hashed: {}", hashed);
