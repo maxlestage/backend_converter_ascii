@@ -17,6 +17,8 @@ anyhow = "^1.0.69"
 queries = {path = "./queries" }
 entities = {path = "./entities" } 
 bcrypt = {workspace = true }
+actix-session = {workspace = true }
+serde_json = "1.0.93"
 
 [workspace]
 members = ["queries", "entities"]
@@ -32,3 +34,5 @@ chrono = "^0.4"
 serde = { version = "^1.0", features = ["derive"] }
 serde_json = "1.0.93"
 bcrypt = "^0.14"
+actix-session = "0.5.0"
+

@@ -1,5 +1,9 @@
+// use actix_session::config::PersistentSession;
+use actix_session::{CookieSession, Session};
+// use actix_web::cookie::{time, Key};
 use actix_web::delete;
 use actix_web::{get, guard, post, web, App, HttpResponse, HttpServer, Responder};
+
 use entities::user;
 // use futures::executor::block_on;::
 // use sea_orm::{ConnectionTrait, Database, DatabaseConnection, DbErr, Insert, Statement};
@@ -19,11 +23,6 @@ pub enum InternalServerError {
 }
 
 pub type Result<T> = anyhow::Result<T, InternalServerError>;
-
-#[post("/sign_in")]
-async fn sign_in(req_body: String) -> impl Responder {
-    HttpResponse::Ok().body(req_body)
-}
 
 #[post("/logout")]
 async fn logout(req_body: String) -> impl Responder {
@@ -77,6 +76,58 @@ async fn sign_up(user_input: web::Json<JsonValue>) -> impl Responder {
     }
 
     HttpResponse::Created().json(user)
+}
+
+#[post("/signin")]
+async fn sign_in(user_input: web::Json<JsonValue>, session: Session) -> impl Responder {
+    let db_result = tokio::spawn(async move { run().await });
+    println!("All user input : {:?}", user_input);
+    let user_input_password = user_input["password"].clone().to_owned();
+    println!("User Password Input : {:?}", user_input_password);
+    let user: user::Model;
+    let Ok(user_active_model) = user::ActiveModel::from_json(user_input.into_inner()) else {
+  return HttpResponse::NotAcceptable().finish();
+};
+
+    match db_result.await {
+        Ok(Ok(db)) => {
+            // let db_clone = db.clone();
+            if let Some(user_check) = register_user(db.clone(), user_active_model.clone()).await {
+                let user_checked_clone = user_check.clone();
+                user = user_checked_clone;
+                // let user_clone = user.clone();
+                // let user_checked_clone = user_check.clone();
+                let select_user_by_email =
+                    select_user_by_email(db.clone(), user_active_model.clone()).await;
+
+                if select_user_by_email {
+                    let user_typed_password = user_active_model.password;
+                    // .as_str()
+                    // .expect("Invalid password")
+                    // .to_owned();
+                    if password_is_valid(db, user_typed_password).await {
+                        println!("je rentre ici? ");
+                        session.insert("mail", &user.mail).unwrap();
+                        return HttpResponse::Accepted().json("Vous êtes connecté!");
+                    } else {
+                        return HttpResponse::NotAcceptable().json("Password incorrect");
+                    }
+                } else {
+                    return HttpResponse::NotAcceptable().json("le mail ne correspond pas");
+                }
+            } else {
+                return HttpResponse::Unauthorized().json("Veuillez vous inscrire");
+            }
+        }
+        Ok(Err(err)) => panic!("Erreur lors de la connexion à la base de données : {}", err),
+        Err(err) => panic!(
+            "Erreur inattendue lors de la connexion à la base de données : {}",
+            err
+        ),
+    }
+
+    // store user id in session
+    // session.insert("mail", &user.mail).unwrap();
 }
 
 #[delete("/delete")]
@@ -185,13 +236,15 @@ async fn main() -> std::io::Result<()> {
             HttpServer::new(|| {
                 App::new()
                     .service(home)
+                    .service(sign_up)
+                    .service(sign_in)
+                    .wrap(CookieSession::signed(&[0; 32]).secure(false))
                     .service(user_id)
                     .service(my_videos)
                     .service(watch)
                     // .service(test)//
                     .service(delete)
                     .service(select)
-                    .service(sign_up)
                     .default_service(
                         web::route()
                             .guard(guard::Not(guard::Get()))
