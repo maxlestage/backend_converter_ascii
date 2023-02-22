@@ -55,16 +55,13 @@ async fn home() -> impl Responder {
 async fn sign_up(user_input: web::Json<JsonValue>) -> impl Responder {
     let db_result = tokio::spawn(async move { run().await });
 
-    let user: user::Model;
     let Ok(user_active_model) = user::ActiveModel::from_json(user_input.into_inner()) else {
   return HttpResponse::NotAcceptable().finish();
 };
 
     match db_result.await {
         Ok(Ok(db)) => {
-            if let Some(user_check) = create_user(db, user_active_model).await {
-                user = user_check;
-            } else {
+            if create_user(db, user_active_model).await.is_none() {
                 return HttpResponse::Conflict().finish();
             }
         }
@@ -75,48 +72,34 @@ async fn sign_up(user_input: web::Json<JsonValue>) -> impl Responder {
         ),
     }
 
-    HttpResponse::Created().json(user)
+    HttpResponse::Created().json("Welcome!")
 }
 
 #[post("/signin")]
 async fn sign_in(user_input: web::Json<JsonValue>, session: Session) -> impl Responder {
     let db_result = tokio::spawn(async move { run().await });
-    println!("All user input : {:?}", user_input);
-    let user_input_password = user_input["password"].clone().to_owned();
-    println!("User Password Input : {:?}", user_input_password);
-    let user: user::Model;
+
     let Ok(user_active_model) = user::ActiveModel::from_json(user_input.into_inner()) else {
-  return HttpResponse::NotAcceptable().finish();
-};
+    return HttpResponse::NotAcceptable().finish();
+    };
 
     match db_result.await {
         Ok(Ok(db)) => {
-            // let db_clone = db.clone();
-            if let Some(user_check) = register_user(db.clone(), user_active_model.clone()).await {
-                let user_checked_clone = user_check.clone();
-                user = user_checked_clone;
-                // let user_clone = user.clone();
-                // let user_checked_clone = user_check.clone();
-                let select_user_by_email =
-                    select_user_by_email(db.clone(), user_active_model.clone()).await;
-
-                if select_user_by_email {
-                    let user_typed_password = user_active_model.password;
-                    // .as_str()
-                    // .expect("Invalid password")
-                    // .to_owned();
-                    if password_is_valid(db, user_typed_password).await {
-                        println!("je rentre ici? ");
-                        session.insert("mail", &user.mail).unwrap();
-                        return HttpResponse::Accepted().json("Vous êtes connecté!");
-                    } else {
-                        return HttpResponse::NotAcceptable().json("Password incorrect");
-                    }
-                } else {
-                    return HttpResponse::NotAcceptable().json("le mail ne correspond pas");
-                }
+            let select_user_by_email =
+                select_user_by_email(db.clone(), user_active_model.clone()).await;
+            let password = if let Some(user) = select_user_by_email {
+                user.password
             } else {
-                return HttpResponse::Unauthorized().json("Veuillez vous inscrire");
+                return HttpResponse::NotAcceptable().json("le mail ne correspond pas");
+            };
+
+            if password_is_valid(user_active_model.password, password).await {
+                session
+                    .insert("mail", user_active_model.mail.as_ref())
+                    .unwrap();
+                return HttpResponse::Accepted().json("Vous êtes connecté!");
+            } else {
+                return HttpResponse::NotAcceptable().json("Password incorrect");
             }
         }
         Ok(Err(err)) => panic!("Erreur lors de la connexion à la base de données : {}", err),
